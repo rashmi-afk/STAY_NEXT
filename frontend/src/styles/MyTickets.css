@@ -1,0 +1,74 @@
+.tickets-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.tickets-header {
+  margin-bottom: 20px;
+}
+
+.ticket-form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ticket-form input,
+.ticket-form textarea {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.ticket-form button {
+  background: #08142c;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tickets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ticket-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.ticket-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ticket-status {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.ticket-status.open {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.ticket-status.resolved {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.ticket-error {
+  color: red;
+}

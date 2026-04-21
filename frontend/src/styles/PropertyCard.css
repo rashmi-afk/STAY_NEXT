@@ -1,0 +1,95 @@
+.property-card {
+  position: relative;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.property-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.wishlist-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transition: all 0.2s ease;
+}
+
+.wishlist-btn:hover {
+  transform: scale(1.08);
+}
+
+.wishlist-btn.active {
+  color: #e63946;
+}
+
+.wishlist-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.property-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.property-content {
+  padding: 16px;
+}
+
+.property-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.property-location {
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.property-price {
+  color: #e63946;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.property-guests {
+  color: #374151;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+}
+
+.details-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #08142c;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.details-btn:hover {
+  background: #10213f;
+}
