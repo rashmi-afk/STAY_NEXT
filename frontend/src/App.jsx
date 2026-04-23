@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BookingHelpAssistant from "./components/BookingHelpAssistant";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -170,6 +171,7 @@ function App() {
       </main>
 
       <Footer />
+      <BookingHelpAssistant />
     </div>
   );
 }
