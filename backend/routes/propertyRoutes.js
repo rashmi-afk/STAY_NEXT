@@ -10,13 +10,13 @@ const {
   getMyProperties,
 } = require("../controllers/propertyController");
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect, hostApprovedOnly } = require("../middleware/authMiddleware");
 
-router.post("/", protect, addProperty);
+router.post("/", protect, hostApprovedOnly, addProperty);
 router.get("/", getAllProperties);
-router.get("/my-properties", protect, getMyProperties);
+router.get("/my-properties", protect, hostApprovedOnly, getMyProperties);
 router.get("/:id", getPropertyById);
-router.put("/:id", protect, updateProperty);
-router.delete("/:id", protect, deleteProperty);
+router.put("/:id", protect, hostApprovedOnly, updateProperty);
+router.delete("/:id", protect, hostApprovedOnly, deleteProperty);
 
 module.exports = router;

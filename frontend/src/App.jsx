@@ -14,6 +14,14 @@ import PaymentPage from "./pages/PaymentPage";
 import MyTickets from "./pages/MyTickets";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
+import HostBookings from "./pages/HostBookings";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminBookings from "./pages/AdminBookings";
+import AdminPayments from "./pages/AdminPayments";
+import AdminTickets from "./pages/AdminTickets";
+import Notifications from "./pages/Notifications";
+import ProfileSettings from "./pages/ProfileSettings";
 
 import "./styles/Layout.css";
 
@@ -66,6 +74,22 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute allowedRoles={["guest", "host", "admin"]}>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute allowedRoles={["guest", "host", "admin"]}>
+                <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Host routes */}
           <Route
@@ -91,22 +115,16 @@ function App() {
             path="/host-bookings"
             element={
               <ProtectedRoute allowedRoles={["host"]}>
-                <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
-                  <h1>Host Bookings Page</h1>
-                  <p>This page will show all bookings for host properties.</p>
-                </div>
+                <HostBookings />
               </ProtectedRoute>
             }
           />
 
-          {/* Admin temporary routes */}
           <Route
             path="/admin/dashboard"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
-                  <h1>Admin Dashboard</h1>
-                </div>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
@@ -115,9 +133,25 @@ function App() {
             path="/admin/users"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
-                  <h1>Admin Users Page</h1>
-                </div>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/bookings"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminBookings />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/payments"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminPayments />
               </ProtectedRoute>
             }
           />
@@ -126,9 +160,7 @@ function App() {
             path="/admin/tickets"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
-                  <h1>Admin Tickets Page</h1>
-                </div>
+                <AdminTickets />
               </ProtectedRoute>
             }
           />

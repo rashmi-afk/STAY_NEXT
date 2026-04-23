@@ -15,7 +15,12 @@ export const failPayment = async (paymentId) => {
   return response.data;
 };
 
-export const getMyPayments = async () => {
-  const response = await API.get("/payments/my-payments");
+export const getMyPayments = async (page = 1, limit = 10) => {
+  const response = await API.get(`/payments/my-payments?page=${page}&limit=${limit}`);
+  return response.data;
+};
+
+export const getAllPayments = async (page = 1, limit = 10) => {
+  const response = await API.get(`/payments/all?page=${page}&limit=${limit}`);
   return response.data;
 };

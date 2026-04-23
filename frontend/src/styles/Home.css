@@ -177,6 +177,19 @@
   gap: 24px;
 }
 
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.page-indicator {
+  font-weight: 600;
+  color: #374151;
+}
+
 @media (max-width: 1100px) {
   .search-bar {
     grid-template-columns: 1fr 1fr;

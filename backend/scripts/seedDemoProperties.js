@@ -13,6 +13,7 @@ const demoHost = {
   email: "demo.host@staynext.com",
   password: "DemoHost@123",
   role: "host",
+  hostApprovalStatus: "approved",
 };
 
 const demoProperties = [
@@ -208,18 +209,6 @@ const demoProperties = [
     ],
     amenities: ["Breakfast", "Wi-Fi", "Temple View", "Air Conditioning"],
   },
-  {
-    title: "Forest Edge Eco Home",
-    description:
-      "An eco-conscious stay on the forest edge with natural finishes, quiet mornings, and a slow-paced retreat feel.",
-    location: "Coorg, India",
-    pricePerNight: 4500,
-    maxGuests: 4,
-    images: [
-      "https://images.unsplash.com/photo-1472220625704-91e1462799b2?auto=format&fit=crop&w=1200&q=80",
-    ],
-    amenities: ["Coffee Estate", "Nature Walks", "Wi-Fi", "Parking"],
-  },
 ];
 
 async function seedDemoProperties() {
@@ -239,6 +228,7 @@ async function seedDemoProperties() {
         email: demoHost.email,
         password,
         role: demoHost.role,
+        hostApprovalStatus: demoHost.hostApprovalStatus,
       },
       {
         upsert: true,

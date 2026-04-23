@@ -30,6 +30,7 @@ function Login() {
 
       const data = await loginUser(formData);
       localStorage.setItem("userInfo", JSON.stringify(data));
+      window.dispatchEvent(new Event("userInfoUpdated"));
 
       alert("Login successful");
       navigate("/");

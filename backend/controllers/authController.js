@@ -18,6 +18,12 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
+    }
+
     const userExists = await User.findOne({ email });
 
     if (userExists) {
@@ -27,18 +33,30 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    let normalizedRole = role || "guest";
+    let hostApprovalStatus = "not-applicable";
+
+    if (normalizedRole === "host") {
+      hostApprovalStatus = "pending";
+    }
+
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: role || "guest",
+      role: normalizedRole,
+      hostApprovalStatus,
     });
 
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl,
       role: user.role,
+      hostApprovalStatus: user.hostApprovalStatus,
+      notificationPreferences: user.notificationPreferences,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -54,11 +72,20 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      if (user.role === "host" && !user.hostApprovalStatus) {
+        user.hostApprovalStatus = "approved";
+        await user.save();
+      }
+
       res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        avatarUrl: user.avatarUrl,
         role: user.role,
+        hostApprovalStatus: user.hostApprovalStatus,
+        notificationPreferences: user.notificationPreferences,
         token: generateToken(user._id),
       });
     } else {

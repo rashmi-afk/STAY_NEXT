@@ -45,6 +45,8 @@ const addProperty = async (req, res) => {
 const getAllProperties = async (req, res) => {
   try {
     const { location, minPrice, maxPrice, guests } = req.query;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 9, 1), 30);
 
     let query = {};
 
@@ -62,9 +64,22 @@ const getAllProperties = async (req, res) => {
       query.maxGuests = { $gte: Number(guests) };
     }
 
-    const properties = await Property.find(query).populate("host", "name email");
+    const total = await Property.countDocuments(query);
+    const properties = await Property.find(query)
+      .populate("host", "name email")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-    res.status(200).json(properties);
+    res.status(200).json({
+      items: properties,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -174,12 +189,25 @@ const deleteProperty = async (req, res) => {
 // Get logged-in host properties
 const getMyProperties = async (req, res) => {
   try {
-    const properties = await Property.find({ host: req.user._id }).populate(
-      "host",
-      "name email"
-    );
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 9, 1), 30);
+    const query = { host: req.user._id };
+    const total = await Property.countDocuments(query);
+    const properties = await Property.find(query)
+      .populate("host", "name email")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-    res.status(200).json(properties);
+    res.status(200).json({
+      items: properties,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,

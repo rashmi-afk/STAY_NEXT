@@ -5,6 +5,7 @@ import "../styles/Home.css";
 
 function Home() {
   const [properties, setProperties] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -14,12 +15,13 @@ function Home() {
     guests: "",
   });
 
-  const fetchProperties = async (customFilters = filters) => {
+  const fetchProperties = async (customFilters = filters, page = 1) => {
     try {
       setLoading(true);
       setError("");
-      const data = await getAllProperties(customFilters);
-      setProperties(data);
+      const data = await getAllProperties(customFilters, page);
+      setProperties(data.items || []);
+      setPagination(data.pagination || { page: 1, totalPages: 1 });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch properties");
     } finally {
@@ -40,7 +42,7 @@ function Home() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchProperties(filters);
+    fetchProperties(filters, 1);
   };
 
   const handleClear = () => {
@@ -50,7 +52,7 @@ function Home() {
       guests: "",
     };
     setFilters(resetFilters);
-    fetchProperties(resetFilters);
+    fetchProperties(resetFilters, 1);
   };
 
   return (
@@ -137,6 +139,30 @@ function Home() {
             <PropertyCard key={property._id} property={property} />
           ))}
         </div>
+
+        {pagination.totalPages > 1 && (
+          <div className="pager">
+            <button
+              type="button"
+              className="clear-btn"
+              onClick={() => fetchProperties(filters, pagination.page - 1)}
+              disabled={pagination.page <= 1}
+            >
+              Previous
+            </button>
+            <span className="page-indicator">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            <button
+              type="button"
+              className="search-btn"
+              onClick={() => fetchProperties(filters, pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );

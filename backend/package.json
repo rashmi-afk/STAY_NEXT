@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed:demo": "node scripts/seedDemoProperties.js"
+    "seed:admin": "node scripts/seedDemoAdmin.js",
+    "seed:demo": "node scripts/seedDemoProperties.js",
+    "test": "node --test tests"
   },
   "keywords": [],
   "author": "",

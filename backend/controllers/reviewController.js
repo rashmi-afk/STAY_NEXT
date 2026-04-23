@@ -2,6 +2,9 @@ const Review = require("../models/Review");
 const Booking = require("../models/Booking");
 const Property = require("../models/Property");
 
+const getBookingStatus = (booking) =>
+  booking.bookingStatus || booking.status || "pending";
+
 // Add review
 const createReview = async (req, res) => {
   try {
@@ -27,7 +30,7 @@ const createReview = async (req, res) => {
       });
     }
 
-    if (booking.bookingStatus !== "confirmed") {
+    if (getBookingStatus(booking) !== "confirmed") {
       return res.status(400).json({
         message: "Only confirmed bookings can be reviewed",
       });

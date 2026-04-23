@@ -31,6 +31,23 @@
   color: #dc2626;
 }
 
+.my-properties-feedback {
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-weight: 600;
+}
+
+.my-properties-feedback.success {
+  background: #ecfdf3;
+  color: #166534;
+}
+
+.my-properties-feedback.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 .my-properties-empty {
   background: #ffffff;
   border: 1px solid #ececec;
@@ -163,6 +180,8 @@
 .my-property-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .property-btn {
@@ -171,6 +190,8 @@
   border-radius: 10px;
   font-weight: 600;
   transition: opacity 0.2s ease;
+  border: 0;
+  cursor: pointer;
 }
 
 .view-btn {
@@ -178,8 +199,109 @@
   color: #ffffff;
 }
 
+.edit-btn {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.delete-btn {
+  background: #111827;
+  color: #ffffff;
+}
+
+.save-btn {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.cancel-edit-btn {
+  background: #f3f4f6;
+  color: #111827;
+}
+
 .property-btn:hover {
   opacity: 0.92;
+}
+
+.property-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.property-editor {
+  margin-top: 18px;
+  border-top: 1px solid #ececec;
+  padding-top: 18px;
+}
+
+.property-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.property-editor-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.property-editor-grid input,
+.property-editor-grid textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+
+.upload-field small {
+  color: #6b7280;
+}
+
+.editor-image-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.editor-image-card {
+  background: #f9fafb;
+  border: 1px solid #ececec;
+  border-radius: 16px;
+  padding: 10px;
+}
+
+.editor-image-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.remove-image-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: #fff1f2;
+  color: #be123c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.editor-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 640px) {
@@ -206,5 +328,9 @@
   .property-btn {
     width: 100%;
     text-align: center;
+  }
+
+  .property-editor-grid {
+    grid-template-columns: 1fr;
   }
 }

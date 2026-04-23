@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getPropertyById } from "../services/propertyService";
-import { createBooking } from "../services/bookingService";
+import { createBooking, getMyBookings } from "../services/bookingService";
 import { createReview, getPropertyReviews } from "../services/reviewService";
 import "../styles/PropertyDetails.css";
 
@@ -24,6 +24,7 @@ function PropertyDetails() {
   const [reviewLoading, setReviewLoading] = useState(true);
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState("");
+  const [reviewableBookings, setReviewableBookings] = useState([]);
 
   const [bookingData, setBookingData] = useState({
     checkIn: "",
@@ -50,6 +51,26 @@ function PropertyDetails() {
     };
 
     fetchProperty();
+  }, [id]);
+
+  useEffect(() => {
+    const loadReviewableBookings = async () => {
+      if (!localStorage.getItem("userInfo")) return;
+
+      try {
+        const data = await getMyBookings();
+        const matches = (data.items || []).filter(
+          (booking) =>
+            booking.property?._id === id &&
+            (booking.bookingStatus || booking.status) === "confirmed"
+        );
+        setReviewableBookings(matches);
+      } catch {
+        setReviewableBookings([]);
+      }
+    };
+
+    loadReviewableBookings();
   }, [id]);
 
   useEffect(() => {
@@ -252,14 +273,19 @@ function PropertyDetails() {
 
               <div className="review-form-group">
                 <label htmlFor="bookingId">Booking ID</label>
-                <input
-                  type="text"
+                <select
                   id="bookingId"
                   name="bookingId"
-                  placeholder="Enter your booking ID"
                   value={reviewForm.bookingId}
                   onChange={handleReviewChange}
-                />
+                >
+                  <option value="">Select a confirmed booking</option>
+                  {reviewableBookings.map((booking) => (
+                    <option key={booking._id} value={booking._id}>
+                      {formatDate(booking.checkIn)} to {formatDate(booking.checkOut)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="review-form-group">

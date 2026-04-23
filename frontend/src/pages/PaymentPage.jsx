@@ -54,6 +54,9 @@ function PaymentPage() {
     fetchBooking();
   }, [bookingId]);
 
+  const bookingStatus = booking?.bookingStatus || booking?.status || "pending";
+  const paymentStatus = booking?.paymentStatus || "pending";
+
   const openDemoCheckout = (e) => {
     e.preventDefault();
     setError("");
@@ -95,6 +98,7 @@ function PaymentPage() {
         ...prevBooking,
         paymentStatus: "paid",
         bookingStatus: "confirmed",
+        status: "confirmed",
       }));
       setTransactionDetails({
         transactionId: completedPayment.payment.transactionId,
@@ -345,10 +349,10 @@ function PaymentPage() {
               <strong>Guests:</strong> {booking.guests}
             </p>
             <p>
-              <strong>Booking Status:</strong> {booking.bookingStatus}
+              <strong>Booking Status:</strong> {bookingStatus}
             </p>
             <p>
-              <strong>Payment Status:</strong> {booking.paymentStatus}
+              <strong>Payment Status:</strong> {paymentStatus}
             </p>
             <p>
               <strong>Demo Security:</strong> Server-confirmed booking flow
@@ -388,7 +392,7 @@ function PaymentPage() {
             id="paymentMethod"
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
-            disabled={loading || booking.paymentStatus === "paid"}
+            disabled={loading || paymentStatus === "paid"}
           >
             <option value="card">Card</option>
             <option value="upi">UPI</option>
@@ -404,11 +408,11 @@ function PaymentPage() {
 
           <button
             type="submit"
-            disabled={loading || booking.paymentStatus === "paid"}
+            disabled={loading || paymentStatus === "paid"}
           >
             {loading
               ? "Processing Demo Payment..."
-              : booking.paymentStatus === "paid"
+              : paymentStatus === "paid"
                 ? "Already Paid"
                 : "Open Demo Checkout"}
           </button>

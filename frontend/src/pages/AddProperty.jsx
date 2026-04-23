@@ -1,23 +1,34 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { addProperty } from "../services/propertyService";
-import { uploadImage } from "../services/uploadService";
+import { uploadImages } from "../services/uploadService";
 import "../styles/AddProperty.css";
+
+const getUserInfo = () => {
+  try {
+    return JSON.parse(localStorage.getItem("userInfo"));
+  } catch {
+    return null;
+  }
+};
 
 function AddProperty() {
   const navigate = useNavigate();
+  const userInfo = getUserInfo();
+  const isHostPendingApproval =
+    userInfo?.role === "host" && userInfo?.hostApprovalStatus !== "approved";
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     location: "",
     pricePerNight: "",
-    imageUrl: "",
+    imageUrls: [],
     amenities: "",
     maxGuests: "",
   });
 
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -31,11 +42,16 @@ function AddProperty() {
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    if (isHostPendingApproval) {
+      setError("Your host account is awaiting admin approval.");
+      return;
+    }
 
-    if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file");
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (files.some((file) => !file.type.startsWith("image/"))) {
+      setError("Please select valid image files");
       return;
     }
 
@@ -43,26 +59,26 @@ function AddProperty() {
       setUploading(true);
       setError("");
 
-      const localPreview = URL.createObjectURL(file);
-      setPreviewUrl(localPreview);
+      const localPreviews = files.map((file) => URL.createObjectURL(file));
+      setPreviewUrls(localPreviews);
 
-      const data = await uploadImage(file);
-      const uploadedUrl = data.imageUrl || data.url || "";
+      const data = await uploadImages(files);
+      const uploadedUrls = data.urls || (data.url ? [data.url] : []);
 
-      if (!uploadedUrl) {
-        throw new Error("Image URL not returned from server");
+      if (uploadedUrls.length === 0) {
+        throw new Error("Image URLs not returned from server");
       }
 
       setFormData((prev) => ({
         ...prev,
-        imageUrl: uploadedUrl,
+        imageUrls: uploadedUrls,
       }));
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Image upload failed");
-      setPreviewUrl("");
+      setPreviewUrls([]);
       setFormData((prev) => ({
         ...prev,
-        imageUrl: "",
+        imageUrls: [],
       }));
     } finally {
       setUploading(false);
@@ -74,8 +90,13 @@ function AddProperty() {
     setError("");
     setSuccess("");
 
-    if (!formData.imageUrl) {
-      setError("Please upload an image before adding the property");
+    if (isHostPendingApproval) {
+      setError("Your host account is awaiting admin approval.");
+      return;
+    }
+
+    if (formData.imageUrls.length === 0) {
+      setError("Please upload at least one image before adding the property");
       return;
     }
 
@@ -87,7 +108,7 @@ function AddProperty() {
         description: formData.description,
         location: formData.location,
         pricePerNight: Number(formData.pricePerNight),
-        images: [formData.imageUrl],
+        images: formData.imageUrls,
         amenities: formData.amenities
           ? formData.amenities
               .split(",")
@@ -106,11 +127,11 @@ function AddProperty() {
         description: "",
         location: "",
         pricePerNight: "",
-        imageUrl: "",
+        imageUrls: [],
         amenities: "",
         maxGuests: "",
       });
-      setPreviewUrl("");
+      setPreviewUrls([]);
 
       setTimeout(() => {
         navigate("/my-properties");
@@ -121,6 +142,21 @@ function AddProperty() {
       setLoading(false);
     }
   };
+
+  const imagesForPreview = previewUrls.length > 0 ? previewUrls : formData.imageUrls;
+
+  if (isHostPendingApproval) {
+    return (
+      <div className="add-property-page">
+        <div className="add-property-wrapper">
+          <div className="add-property-header">
+            <h1>Host Approval Pending</h1>
+            <p>Your host account must be approved by an admin before you can add properties.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="add-property-page">
@@ -188,14 +224,15 @@ function AddProperty() {
           </div>
 
           <div className="form-group full-width">
-            <label htmlFor="propertyImage">Upload Image</label>
+            <label htmlFor="propertyImage">Upload Images</label>
             <input
               type="file"
               id="propertyImage"
               accept="image/*"
+              multiple
               onChange={handleImageUpload}
             />
-            {uploading && <small>Uploading image...</small>}
+            {uploading && <small>Uploading images...</small>}
           </div>
 
           <div className="form-group full-width">
@@ -228,8 +265,12 @@ function AddProperty() {
           <div className="form-group preview-box">
             <label>Image Preview</label>
             <div className="image-preview">
-              {previewUrl || formData.imageUrl ? (
-                <img src={previewUrl || formData.imageUrl} alt="Preview" />
+              {imagesForPreview.length > 0 ? (
+                <div className="preview-grid">
+                  {imagesForPreview.map((url) => (
+                    <img key={url} src={url} alt="Preview" />
+                  ))}
+                </div>
               ) : (
                 <span>No image preview available</span>
               )}
@@ -239,7 +280,7 @@ function AddProperty() {
           <div className="form-actions full-width">
             <button type="submit" disabled={loading || uploading}>
               {uploading
-                ? "Uploading Image..."
+                ? "Uploading Images..."
                 : loading
                 ? "Adding Property..."
                 : "Add Property"}

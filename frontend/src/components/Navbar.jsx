@@ -1,14 +1,77 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "../styles/Navbar.css";
+
+const getStoredUserInfo = () => {
+  try {
+    return JSON.parse(localStorage.getItem("userInfo"));
+  } catch {
+    return null;
+  }
+};
 
 function Navbar() {
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const location = useLocation();
+  const [userInfo, setUserInfo] = useState(getStoredUserInfo());
+
+  const roleMeta = {
+    guest: { label: "Guest Hub", shortLabel: "Guest" },
+    host: { label: "Host Hub", shortLabel: "Host" },
+    admin: { label: "Admin Desk", shortLabel: "Admin" },
+  };
+
+  const roleLinks = {
+    guest: [
+      { to: "/my-bookings", label: "My Bookings" },
+      { to: "/notifications", label: "Notifications" },
+      { to: "/wishlist", label: "Wishlist" },
+      { to: "/my-tickets", label: "Support" },
+      { to: "/profile", label: "Profile" },
+    ],
+    host: [
+      { to: "/add-property", label: "Add Property" },
+      { to: "/notifications", label: "Notifications" },
+      { to: "/my-properties", label: "My Properties" },
+      { to: "/host-bookings", label: "Host Bookings" },
+      { to: "/my-tickets", label: "Support" },
+      { to: "/profile", label: "Profile" },
+    ],
+    admin: [
+      { to: "/admin/dashboard", label: "Dashboard" },
+      { to: "/admin/users", label: "Users" },
+      { to: "/admin/bookings", label: "Bookings" },
+      { to: "/notifications", label: "Notifications" },
+      { to: "/admin/payments", label: "Payments" },
+      { to: "/admin/tickets", label: "Support" },
+      { to: "/profile", label: "Profile" },
+    ],
+  };
+
+  useEffect(() => {
+    const syncUserInfo = () => {
+      setUserInfo(getStoredUserInfo());
+    };
+
+    window.addEventListener("storage", syncUserInfo);
+    window.addEventListener("userInfoUpdated", syncUserInfo);
+
+    return () => {
+      window.removeEventListener("storage", syncUserInfo);
+      window.removeEventListener("userInfoUpdated", syncUserInfo);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
+    window.dispatchEvent(new Event("userInfoUpdated"));
     navigate("/login");
   };
+
+  const currentRole = userInfo?.role;
+  const currentRoleMeta = roleMeta[currentRole];
+  const currentLinks = roleLinks[currentRole] || [];
+  const isActivePath = (path) => location.pathname === path;
 
   return (
     <header className="navbar">
@@ -44,54 +107,30 @@ function Navbar() {
             </div>
           ) : (
             <>
-              <nav className="navbar-links">
-                {userInfo?.role === "guest" && (
-                  <>
-                    <Link to="/my-bookings" className="top-link">
-                      My Bookings
-                    </Link>
-                    <Link to="/wishlist" className="top-link">
-                      Wishlist
-                    </Link>
-                    <Link to="/my-tickets" className="top-link">
-                      Support
-                    </Link>
-                  </>
-                )}
+              <div className="navbar-dashboard-shell">
+                <div className="navbar-workspace-tag">
+                  <span className={`navbar-role-badge ${currentRole}`}>
+                    {currentRoleMeta?.label}
+                  </span>
+                </div>
 
-                {userInfo?.role === "host" && (
-                  <>
-                    <Link to="/add-property" className="top-link">
-                      Add Property
+                <nav className="navbar-links">
+                  {currentLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={`top-link ${isActivePath(link.to) ? "active" : ""}`}
+                    >
+                      {link.label}
                     </Link>
-                    <Link to="/my-properties" className="top-link">
-                      My Properties
-                    </Link>
-                    <Link to="/host-bookings" className="top-link">
-                      Host Bookings
-                    </Link>
-                    <Link to="/my-tickets" className="top-link">
-                      Support
-                    </Link>
-                  </>
-                )}
-
-                {userInfo?.role === "admin" && (
-                  <>
-                    <Link to="/admin/dashboard" className="top-link">
-                      Dashboard
-                    </Link>
-                    <Link to="/admin/users" className="top-link">
-                      Users
-                    </Link>
-                    <Link to="/admin/tickets" className="top-link">
-                      Tickets
-                    </Link>
-                  </>
-                )}
-              </nav>
+                  ))}
+                </nav>
+              </div>
 
               <div className="navbar-user">
+                <span className={`navbar-user-role ${currentRole}`}>
+                  {currentRoleMeta?.shortLabel}
+                </span>
                 <span className="navbar-user-name">
                   {userInfo.name?.split(" ")[0]}
                 </span>

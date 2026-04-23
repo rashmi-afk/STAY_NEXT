@@ -1,5 +1,12 @@
 const Payment = require("../models/Payment");
 const Booking = require("../models/Booking");
+const Property = require("../models/Property");
+const { createNotification } = require("../services/notificationService");
+
+const getBookingStatus = (booking) =>
+  booking.bookingStatus || booking.status || "pending";
+
+const getPaymentStatus = (booking) => booking.paymentStatus || "pending";
 
 // Create manual payment record
 const createPayment = async (req, res) => {
@@ -26,13 +33,13 @@ const createPayment = async (req, res) => {
       });
     }
 
-    if (booking.bookingStatus === "cancelled") {
+    if (getBookingStatus(booking) === "cancelled") {
       return res.status(400).json({
         message: "Cannot create payment for a cancelled booking",
       });
     }
 
-    if (booking.paymentStatus === "paid") {
+    if (getPaymentStatus(booking) === "paid") {
       return res.status(400).json({
         message: "This booking is already paid",
       });
@@ -107,7 +114,7 @@ const completePayment = async (req, res) => {
       });
     }
 
-    if (booking.bookingStatus === "cancelled") {
+    if (getBookingStatus(booking) === "cancelled") {
       return res.status(400).json({
         message: "Cannot complete payment for a cancelled booking",
       });
@@ -118,7 +125,29 @@ const completePayment = async (req, res) => {
 
     booking.paymentStatus = "paid";
     booking.bookingStatus = "confirmed";
+    booking.status = "confirmed";
+    booking.stayStatus = "upcoming";
     await booking.save();
+
+    const property = await Property.findById(booking.property);
+
+    await createNotification({
+      userId: booking.user,
+      type: "payment-success",
+      title: "Payment successful",
+      message: "Your payment was successful and the booking is now confirmed.",
+      metadata: { bookingId: booking._id, paymentId: payment._id },
+    });
+
+    if (property?.host) {
+      await createNotification({
+        userId: property.host,
+        type: "payment-success",
+        title: "Booking confirmed",
+        message: `A guest payment was completed for ${property.title}.`,
+        metadata: { bookingId: booking._id, paymentId: payment._id },
+      });
+    }
 
     res.status(200).json({
       message: "Payment successful, booking confirmed",
@@ -171,7 +200,29 @@ const failPayment = async (req, res) => {
     if (booking) {
       booking.paymentStatus = "failed";
       booking.bookingStatus = "cancelled";
+      booking.status = "cancelled";
+      booking.stayStatus = "cancelled";
       await booking.save();
+
+      const property = await Property.findById(booking.property);
+
+      await createNotification({
+        userId: booking.user,
+        type: "payment-failed",
+        title: "Payment failed",
+        message: "Your payment failed and the booking was cancelled.",
+        metadata: { bookingId: booking._id, paymentId: payment._id },
+      });
+
+      if (property?.host) {
+        await createNotification({
+          userId: property.host,
+          type: "payment-failed",
+          title: "Booking payment failed",
+          message: `A payment attempt failed for ${property.title}.`,
+          metadata: { bookingId: booking._id, paymentId: payment._id },
+        });
+      }
     }
 
     res.status(200).json({
@@ -189,7 +240,12 @@ const failPayment = async (req, res) => {
 // Get my payments
 const getMyPayments = async (req, res) => {
   try {
-    const payments = await Payment.find({ user: req.user._id })
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+    const query = { user: req.user._id };
+    const total = await Payment.countDocuments(query);
+
+    const payments = await Payment.find(query)
       .populate({
         path: "booking",
         populate: {
@@ -197,9 +253,59 @@ const getMyPayments = async (req, res) => {
           select: "title location pricePerNight images",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-    res.status(200).json(payments);
+    res.status(200).json({
+      items: payments,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// Admin gets every payment
+const getAllPayments = async (req, res) => {
+  try {
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+    const total = await Payment.countDocuments();
+
+    const payments = await Payment.find()
+      .populate("user", "name email role")
+      .populate({
+        path: "booking",
+        populate: {
+          path: "property",
+          select: "title location host",
+          populate: {
+            path: "host",
+            select: "name email",
+          },
+        },
+      })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.status(200).json({
+      items: payments,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -212,4 +318,5 @@ module.exports = {
   completePayment,
   failPayment,
   getMyPayments,
+  getAllPayments,
 };

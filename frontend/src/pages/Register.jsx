@@ -32,6 +32,7 @@ function Register() {
 
       const data = await registerUser(formData);
       localStorage.setItem("userInfo", JSON.stringify(data));
+      window.dispatchEvent(new Event("userInfoUpdated"));
 
       alert("Registration successful");
       navigate("/");
@@ -84,7 +85,14 @@ function Register() {
           >
             <option value="guest">Guest</option>
             <option value="host">Host</option>
+            <option value="admin">Admin</option>
           </select>
+
+          {formData.role === "host" && (
+            <p className="register-link-text">
+              Host accounts require admin approval before they can add properties.
+            </p>
+          )}
 
           <button type="submit" disabled={loading}>
             {loading ? "Registering..." : "Register"}

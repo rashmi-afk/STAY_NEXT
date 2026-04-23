@@ -1,8 +1,8 @@
 import API from "./api";
 
-export const uploadImage = async (file) => {
+export const uploadImages = async (files) => {
   const formData = new FormData();
-  formData.append("image", file);
+  files.forEach((file) => formData.append("images", file));
 
   const response = await API.post("/upload", formData, {
     headers: {
@@ -12,3 +12,5 @@ export const uploadImage = async (file) => {
 
   return response.data;
 };
+
+export const uploadImage = async (file) => uploadImages([file]);

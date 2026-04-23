@@ -46,4 +46,20 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly };
+const hostApprovedOnly = (req, res, next) => {
+  if (!req.user || req.user.role !== "host") {
+    return res.status(403).json({
+      message: "Access denied. Host only.",
+    });
+  }
+
+  if (req.user.hostApprovalStatus !== "approved") {
+    return res.status(403).json({
+      message: "Your host account is awaiting admin approval.",
+    });
+  }
+
+  next();
+};
+
+module.exports = { protect, adminOnly, hostApprovedOnly };
